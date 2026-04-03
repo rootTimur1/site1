@@ -1,4 +1,4 @@
-name: Docker Build
+name: Build and Push Docker Image
 
 on:
   push:
@@ -7,6 +7,10 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:                          # <-- ДОБАВЬТЕ ЭТОТ БЛОК
+      contents: read                      # Чтение кода репозитория
+      packages: write                     # Запись в GitHub Container Registry
+
     steps:
       - uses: actions/checkout@v4
       
