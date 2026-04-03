@@ -1,0 +1,48 @@
+# custom-ingress-values.yaml
+
+controller:
+  # 1. Включаем hostNetwork, если нужно, чтобы порты были видны на хосте напрямую
+  # (Обычно true для production, но вы можете оставить false и использовать hostPort)
+  hostNetwork: true
+  
+  # 2. Настройка dnsPolicy, обязательна при hostNetwork: true
+  dnsPolicy: ClusterFirstWithHostNet
+
+  # 3. ИЗМЕНЯЕМ ПОРТ WEBHOOK'А с 8443 на другой (например, 8444)
+  # Это ключевой момент для освобождения 8443 на хосте
+  admissionWebhooks:
+    port: 8444
+    # Если используете hostNetwork, может понадобиться и service порт
+    servicePort: 8444
+
+  # 4. (Опционально) Меняем стандартные http/https порты, если 80/443 тоже заняты
+  containerPort:
+    http: 80
+    https: 443
+  
+  # 5. Пробрасываем порты на хост, если НЕ используете hostNetwork: true
+  # Если hostNetwork: true, этот блок можно закомментировать
+  # hostPort:
+  #   enabled: true
+  #   ports:
+  #     http: 80
+  #     https: 443
+
+  # 6. Дополнительные аргументы для синхронизации с новыми портами (если меняли)
+  extraArgs:
+    http-port: 80
+    https-port: 443
+    # Указываем новый порт для healthz, если хотите, но это не обязательно
+    # healthz-port: 10254
+
+  # 7. (Важно) Если вы меняли http/https порты в containerPort,
+  # проверьте, что probes используют правильные порты.
+  # По умолчанию они смотрят на 10254, трогать их не нужно, если только вы не меняли healthz-port.
+  # livenessProbe:
+  #   httpGet:
+  #     path: /healthz
+  #     port: 10254
+  # readinessProbe:
+  #   httpGet:
+  #     path: /healthz
+  #     port: 10254
